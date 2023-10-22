@@ -2,6 +2,33 @@ import vlc
 from time import sleep
 import os
 import math
+import asyncio
+import python_weather
+
+dir = "/home/not-a-phone/calculator"
+
+with open(dir+"weather/sunny.ans", "r") as sunnyFile:
+    sunny = sunnyFile.read()
+
+with open(dir+"weather/sunny.ans", "r") as clearFile:
+    clear = clearFile.read()
+
+with open(dir+"weather/patchy_rain.ans", "r") as patchy_rainFile:
+    patchy_rainFile = patchy_rainFile.read()
+
+with open(dir+"weather/sunny.ans", "r") as partly_cloudyFile:
+    partly_cloudy = partly_cloudyFile.read()
+
+with open(dir+"weather/overcast.ans", "r") as overcastFile:
+    overcastFile = overcastFile.read()
+
+descriptions = {
+    "Sunny": clear,
+    "Clear": clear,
+    "Patchy Rain": patchy_rainFile,
+    "Partly cloudy": partly_cloudy,
+    "Overcast": overcastFile,
+}
 
 nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 
@@ -143,7 +170,7 @@ def linear_equation():
 def nine_11():
     for i in range(0, 10):
         os.system("clear")
-        f = open(f'911/{i}.txt', 'r')
+        f = open(dir+f'911/{i}.txt', 'r')
         content = f.read()
         print(content)
         f.close()
@@ -212,7 +239,7 @@ def tic_tac_toe():
 
 def play_sound(sound):
     os.system("cls")
-    p = vlc.MediaPlayer("sounds/"+sound)
+    p = vlc.MediaPlayer(dir+"sounds/"+sound)
     p.play()
     input("Press enter to stop")
     p.stop()
@@ -245,7 +272,7 @@ def soundboard():
 def play_song(song):
     os.system("cls")
     global p
-    p = vlc.MediaPlayer(song)
+    p = vlc.MediaPlayer(dir+"songs/"+song)
     p.play()
     print("Playing:")
     print("======================================")
@@ -283,7 +310,7 @@ def song_choice():
     print("------------------------------------------")
     chosen_song = input("#")
     if chosen_song in nums:
-        play_song("songs/"+num_to_song[chosen_song])
+        play_song(num_to_song[chosen_song])
     elif chosen_song == ".":
         main_menu()
     elif chosen_song == "/":
@@ -292,6 +319,52 @@ def song_choice():
     else:
         print("Input not recognised.")
         return song_choice()
+
+async def weather():
+    async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
+        weather = await client.get('Bendigo')
+        os.system("cls")
+        print(descriptions[weather.current.description])
+        print("BENDIGO")
+        print("Current temperature: ", weather.current.temperature)
+        print("Weather: ", weather.current.description)
+        print("Actions:")
+        print("--------------------------------")
+        i = 0
+        for forecasts in weather.forecasts:
+            i+=1
+            print(f"#{i} Predictions for {forecasts.date}")
+        print("--------------------------------")
+        day = input("#")
+        i = 0
+        if day == "1":
+            for forecast in weather.forecasts:
+                i+=1
+                for hourly in forecast.hourly:
+                    print(f"Time: {hourly.time}\n  Temperature: {hourly.temperature}\n  Description: {hourly.description}\n")
+                if i == 1:
+                    break
+        elif day == "2":
+            for forecast in weather.forecasts:
+                i+=1
+                for hourly in forecast.hourly:
+                    print(f"Time: {hourly.time}\n  Temperature: {hourly.temperature}\n  Description: {hourly.description}\n")
+                if i == 2:
+                    break
+        elif day == "3":
+            for forecast in weather.forecasts:
+                i+=1
+                for hourly in forecast.hourly:
+                    if i == 3:
+                        print(f"Time: {hourly.time}\n  Temperature: {hourly.temperature}\n  Description: {hourly.description}\n")
+                if i == 3:
+                    break
+        elif day == ".":
+            return main_menu()
+        else:
+            return weather()
+    input("Press enter to continue.\n")
+    return main_menu()
 
 def main_menu():
     os.system("cls")
@@ -336,4 +409,5 @@ def main_menu():
         print("Command not recognised.\n")
         return main_menu()
 
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 main_menu()
