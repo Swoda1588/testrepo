@@ -1,5 +1,4 @@
-from playsound import playsound
-import multiprocessing
+import vlc
 from time import sleep
 import os
 import math
@@ -213,10 +212,10 @@ def tic_tac_toe():
 
 def play_sound(sound):
     os.system("cls")
-    p = multiprocessing.Process(target=playsound, args=("sounds/"+sound,))
-    p.start()
+    p = vlc.MediaPlayer("sounds/"+sound)
+    p.play()
     input("Press enter to stop")
-    p.terminate()
+    p.stop()
     return soundboard()
 
 def soundboard():
@@ -246,8 +245,8 @@ def soundboard():
 def play_song(song):
     os.system("cls")
     global p
-    p = multiprocessing.Process(target=playsound, args=(song,))
-    p.start()
+    p = vlc.MediaPlayer(song)
+    p.play()
     print("Playing:")
     print("======================================")
     print(song)
@@ -260,7 +259,7 @@ def play_song(song):
     if action == ".":
         song_choice()
     elif action == "/":
-        p.terminate()
+        p.stop()
         song_choice()
 
 def song_choice():
@@ -288,7 +287,7 @@ def song_choice():
     elif chosen_song == ".":
         main_menu()
     elif chosen_song == "/":
-        p.terminate()
+        p.stop()
         song_choice()
     else:
         print("Input not recognised.")
